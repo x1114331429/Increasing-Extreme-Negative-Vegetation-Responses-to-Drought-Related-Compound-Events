@@ -1,4 +1,5 @@
 # Increasing-Extreme-Negative-Vegetation-Responses-to-Drought-Related-Compound-Events
+
 This repository contains the tools and algorithms for identifying, attributing, and analyzing extreme vegetation anomaly events.
 
 ## `tools/`
@@ -38,29 +39,93 @@ For each vegetation anomaly event, a unique key is assigned and linked to an *N*
 - `1` indicates that the corresponding climate anomaly is identified as a significant driver of the vegetation anomaly event.
 - `0` indicates that the corresponding climate anomaly is not identified as a significant driver.
 
-## Overall Workflow
+## Data Preparation
 
-The overall workflow can be summarized as:
+Before running the analysis, the required input datasets should be prepared in advance. All gridded datasets should use the same spatial resolution and spatial extent.
+
+### 1. Vegetation, Climate, and Burned Area Data
+
+Vegetation data, climate data, and burned area data should be provided as monthly time-series arrays with the following shape:
 
 ```text
-Vegetation Data
-      │
-      ▼
-Extreme Event Detection
-      │
-      ▼
-Connected Vegetation Anomaly Events
-      │
-      ├───────────────┐
-      ▼               ▼
-Climate Anomalies   Shuffle Analysis
-      │               │
-      └───────┬───────┘
-              ▼
-     Coincidence Analysis
-              │
-              ▼
-    Event Attribution
-              │
-              ▼
-    Binary Attribution Results
+(360, 720, n × 12)
+```
+
+where:
+
+- `360 × 720` represents the global 0.5° × 0.5° spatial grid.
+- `n` represents the number of years.
+- `n × 12` represents the monthly time dimension.
+
+For example, a 24-year monthly dataset should have a shape of:
+
+```text
+(360, 720, 288)
+```
+
+The same data structure should be used for vegetation variables, climate variables, and burned area data.
+
+Examples of vegetation variables include:
+
+- LAI
+- NDVI
+
+Examples of climate variables include:
+
+- Temperature
+- Precipitation
+- Soil moisture
+- VPD
+
+Burned area data should also be provided at monthly resolution using the same spatial and temporal dimensions.
+
+### 2. Land-use Data
+
+Land-use data should be provided at annual resolution with the following shape:
+
+```text
+(360, 720, n)
+```
+
+where:
+
+- `360 × 720` represents the global 0.5° × 0.5° spatial grid.
+- `n` represents the number of years.
+
+Unlike vegetation, climate, and burned area data, the temporal dimension of land-use data does not need to be multiplied by 12 because land-use data are provided annually.
+
+### 3. Growing Season Data
+
+A growing-season matrix should be prepared to identify whether each grid cell is within the growing season for each month.
+
+The growing-season matrix should have the following shape:
+
+```text
+(360, 720, n × 12)
+```
+
+The values should be binary:
+
+- `1`: the grid cell is within the growing season for that month.
+- `0`: the grid cell is outside the growing season for that month.
+
+The growing-season matrix should have the same spatial and temporal dimensions as the corresponding monthly vegetation and climate datasets.
+
+### 4. Spatial Mask
+
+A spatial mask should be provided to define the region of interest.
+
+The mask should have the following shape:
+
+```text
+(360, 720)
+```
+
+The mask should contain binary values:
+
+- `1`: the grid cell is included in the analysis.
+- `0`: the grid cell is excluded from the analysis.
+
+For example, in this study, the mask represents the land vegetation area.
+
+The spatial mask should use the same spatial grid as all other input datasets.
